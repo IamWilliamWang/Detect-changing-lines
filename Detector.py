@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-
+from vidstab import VidStab
 
 def imread(filename):
     return cv2.imdecode(np.fromfile(filename, dtype=np.uint8), -1)
