@@ -1,5 +1,13 @@
+# IDE datas
 .idea/
 .py*/
+# Videos
 *.mp4
 *.avi
-*utput*/
+# Output
+[Oo]utput*/
+# Test files
+*[Tt]est*
+*[Tt]est*/
+# Temp pictures
+*.png
