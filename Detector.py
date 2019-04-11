@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import Homography
 import sys
 from vidstab import VidStab
 
@@ -21,11 +22,10 @@ def matEqualsRate(mat1, mat2):
     return equalRate
 
 
-def main(args):
-    if len(args) is 1:
-        args +=['3']
-    normalBW = imread_utf('挂地线_Pr' + args[1] + '.png')
-    normalBW = cv2.cvtColor(normalBW, cv2.COLOR_BGR2GRAY)
+
+if __name__ == '__main__':
+    normalBW = imread_utf('挂地线_Pr1.png')
+    normalBW = cv2.cvtColor(normalBW, cv2.IMREAD_COLOR)
 
     videoInput = cv2.VideoCapture('挂地线_Pr.mp4')
     fps = videoInput.get(cv2.CAP_PROP_FPS)
@@ -38,18 +38,17 @@ def main(args):
         ret, frame = videoInput.read()
         if ret is False:
             break
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        videoFrames += [gray]
+        videoFrames += [frame]
     videoInput.release()
 
-    window = 'Gray equals'
+    window = 'equals'
     cv2.namedWindow(window)
     for i in range(60):
         startFrameIndex = int(len(videoFrames) * (i / 60))
         endFrameIndex = int(len(videoFrames) * ((i + 1) / 60))
         maxEqualsRate = 0
         for frameIndex in range(startFrameIndex, endFrameIndex):
-            frame = videoFrames[frameIndex]
+            frame, _ = Homography.alignImages(normalBW, videoFrames[frameIndex])
             equalsRate = matEqualsRate(normalBW, frame)
             if equalsRate > maxEqualsRate:
                 maxEqualsRate = equalsRate
@@ -62,10 +61,6 @@ def main(args):
             cv2.imshow(window, frame)
             if cv2.waitKey(1) == 27:
                 exit(0)
-
-
-if __name__ == '__main__':
-    main(sys.argv)
 
 # window = 'Gray equals'
 # cv2.namedWindow(window)
