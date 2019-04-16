@@ -1,6 +1,7 @@
 # IDE datas
 .idea/
 .py*/
+*py*/
 # Videos
 *.mp4
 *.avi
@@ -12,3 +13,5 @@
 # Temp pictures
 *.png
 *.jpg
+# Reference
+*Ref*

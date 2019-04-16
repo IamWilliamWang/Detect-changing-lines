@@ -4,6 +4,7 @@ from __future__ import print_function
 import cv2
 import numpy as np
 
+
 MAX_FEATURES = 500
 GOOD_MATCH_PERCENT = 0.15
 
@@ -74,5 +75,3 @@ if __name__ == '__main__':
 
     # Print estimated homography
     print("Estimated homography : \n", h)
-
-
