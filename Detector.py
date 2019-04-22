@@ -1,5 +1,4 @@
 import cv2
-import numpy as np
 import Homography
 import CannyDetectorLibrary as lib
 
@@ -7,11 +6,11 @@ import CannyDetectorLibrary as lib
 class Detector:
     @staticmethod
     def Imread(filename):
-        return cv2.imdecode(np.fromfile(filename, dtype=np.uint8), -1)
+        return lib.Transformer.Imread(filename)
 
     @staticmethod
     def PutText(img, text):
-        cv2.putText(img, text, (60, 60), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 0, 0), 2, cv2.LINE_AA)
+        lib.PlotUtil.PutText(img,text, (60,60))
 
     @staticmethod
     def MatrixEqualsRate(mat1, mat2):
@@ -68,6 +67,20 @@ class Detector:
         # self.CompareErrorsAndNormals()
         self.CompareErrorsAndNormals()
 
+    def __IsSameImage(self, original, image_to_compare):
+        if original.shape == image_to_compare.shape:
+            print("The images have same size and channels")
+            difference = cv2.subtract(original, image_to_compare)
+            b, g, r = cv2.split(difference)
+
+            if cv2.countNonZero(b) == 0 and cv2.countNonZero(g) == 0 and cv2.countNonZero(r) == 0:
+                print("The images are completely Equal")
+                return True
+            else:
+                print("The images are NOT equal")
+                return False
+        return False
+
     def GoodMatch(self, original, image_to_compare):
         original = cv2.imread(original)
         image_to_compare = cv2.imread(image_to_compare)
@@ -77,15 +90,7 @@ class Detector:
         image_to_compare = lib.Transformer.GetEdgesFromImage(image_to_compare[500:1400, 800:1600])
 
         # 1) Check if 2 images are equals
-        # if original.shape == image_to_compare.shape:
-        #     print("The images have same size and channels")
-        #     difference = cv2.subtract(original, image_to_compare)
-        #     b, g, r = cv2.split(difference)
-        #
-        #     if cv2.countNonZero(b) == 0 and cv2.countNonZero(g) == 0 and cv2.countNonZero(r) == 0:
-        #         print("The images are completely Equal")
-        #     else:
-        #         print("The images are NOT equal")
+        # self.__IsSameImage(original, image_to_compare)
 
         # 2) Check for similarities between the 2 images
         sift = cv2.xfeatures2d.SIFT_create()
@@ -100,7 +105,7 @@ class Detector:
 
         good_points = []
         for m, n in matches:
-            if m.distance < 0.99 * n.distance:
+            if m.distance < 0.7 * n.distance:
                 good_points.append(m)
 
         # Define how similar they are
@@ -109,21 +114,21 @@ class Detector:
             number_keypoints = len(kp_1)
         else:
             number_keypoints = len(kp_2)
+        print("Keypoints 1ST Image: " + str(len(kp_1)))
+        print("Keypoints 2ND Image: " + str(len(kp_2)))
+        print("GOOD Matches:", len(good_points))
+        print("How good it's the match: ", len(good_points) / number_keypoints * 100)
+
+        result = cv2.drawMatches(original, kp_1, image_to_compare, kp_2, good_points, None)
+
+        cv2.imshow("result", cv2.resize(result, None, fx=0.4, fy=0.4))
+        cv2.imwrite("feature_matching.jpg", result)
+
+        cv2.imshow("Original", cv2.resize(original, None, fx=0.4, fy=0.4))
+        cv2.imshow("Duplicate", cv2.resize(image_to_compare, None, fx=0.4, fy=0.4))
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
         return len(good_points) / number_keypoints * 100
-        # print("Keypoints 1ST Image: " + str(len(kp_1)))
-        # print("Keypoints 2ND Image: " + str(len(kp_2)))
-        # print("GOOD Matches:", len(good_points))
-        # print("How good it's the match: ", len(good_points) / number_keypoints * 100)
-
-        # result = cv2.drawMatches(original, kp_1, image_to_compare, kp_2, good_points, None)
-
-        # cv2.imshow("result", cv2.resize(result, None, fx=0.4, fy=0.4))
-        # cv2.imwrite("feature_matching.jpg", result)
-        #
-        # cv2.imshow("Original", cv2.resize(original, None, fx=0.4, fy=0.4))
-        # cv2.imshow("Duplicate", cv2.resize(image_to_compare, None, fx=0.4, fy=0.4))
-        # cv2.waitKey(0)
-        # cv2.destroyAllWindows()
 
     def CompareErrorsAndNormals(self):
         errorList = ['error.png']
