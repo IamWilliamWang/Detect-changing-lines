@@ -3,17 +3,22 @@
 from __future__ import print_function
 import cv2
 import numpy as np
-
+import CannyDetectorLibrary as lib
 
 MAX_FEATURES = 500
 GOOD_MATCH_PERCENT = 0.15
 
 
 def alignImages(im1, im2):
-    # Convert images to grayscale
-    im1Gray = cv2.cvtColor(im1, cv2.COLOR_BGR2GRAY)
-    im2Gray = cv2.cvtColor(im2, cv2.COLOR_BGR2GRAY)
+    isGrayInput = lib.Transformer.IsGrayImage(im1) and lib.Transformer.IsGrayImage(im2)
+    if isGrayInput:
+        im1Gray = im1
+        im2Gray = im2
+    else:
+        im1Gray = cv2.cvtColor(im1, cv2.COLOR_BGR2GRAY)
+        im2Gray = cv2.cvtColor(im2, cv2.COLOR_BGR2GRAY)
 
+    # Convert images to grayscale
     # Detect ORB features and compute descriptors.
     orb = cv2.ORB_create(MAX_FEATURES)
     keypoints1, descriptors1 = orb.detectAndCompute(im1Gray, None)
@@ -46,7 +51,10 @@ def alignImages(im1, im2):
     h, mask = cv2.findHomography(points1, points2, cv2.RANSAC)
 
     # Use homography
-    height, width, channels = im2.shape
+    if isGrayInput:
+        height, width = im2.shape
+    else:
+        height, width, channels = im2.shape
     im1Reg = cv2.warpPerspective(im1, h, (width, height))
 
     return im1Reg, h  # Aligned image, Estimated homography
